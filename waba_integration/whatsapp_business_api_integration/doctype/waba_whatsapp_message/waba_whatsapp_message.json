@@ -6,18 +6,22 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
-  "image_preview",
-  "preview_html_rendered",
-  "preview_html",
   "section_break_3",
+  "column_break_mosm",
   "status",
   "from",
   "to",
   "message_type",
+  "message_type_id",
+  "message_type_title",
   "column_break_3",
   "type",
   "id",
   "message_body",
+  "column_break_bepk",
+  "image_preview",
+  "preview_html_rendered",
+  "preview_html",
   "media_information_section",
   "media_id",
   "media_hash",
@@ -107,10 +111,10 @@
    "fieldtype": "Select",
    "in_list_view": 1,
    "label": "Message Type",
-   "options": "Text\nImage\nAudio\nVideo\nSystem\nDocument"
+   "options": "Text\nInteractive\nButton\nImage\nAudio\nVideo\nSystem\nDocument"
   },
   {
-   "depends_on": "eval:doc.message_type===\"Text\"",
+   "depends_on": "eval:doc.message_type===\"Text\" || doc.message_type===\"Interactive\"",
    "fieldname": "message_body",
    "fieldtype": "Markdown Editor",
    "label": "Message Body"
@@ -163,12 +167,30 @@
    "fieldtype": "Check",
    "label": "Media Uploaded",
    "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mosm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_bepk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "message_type_title",
+   "fieldtype": "Data",
+   "label": "Message Type Title"
+  },
+  {
+   "fieldname": "message_type_id",
+   "fieldtype": "Data",
+   "label": "Message Type ID"
   }
  ],
  "image_field": "media_image",
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2022-05-26 23:52:27.287967",
+ "modified": "2024-05-03 10:54:18.928257",
  "modified_by": "Administrator",
  "module": "WhatsApp Business API Integration",
  "name": "WABA WhatsApp Message",

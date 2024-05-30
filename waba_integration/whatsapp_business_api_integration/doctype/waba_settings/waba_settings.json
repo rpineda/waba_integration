@@ -6,6 +6,8 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "api_base",
+  "section_break_ykpu",
   "access_token",
   "phone_number_id",
   "column_break_4",
@@ -62,12 +64,22 @@
    "fieldname": "automatically_download_audio",
    "fieldtype": "Check",
    "label": "Automatically Download Audio"
+  },
+  {
+   "default": "https://graph.facebook.com/v13.0",
+   "fieldname": "api_base",
+   "fieldtype": "Data",
+   "label": "API Base"
+  },
+  {
+   "fieldname": "section_break_ykpu",
+   "fieldtype": "Section Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2022-05-25 06:04:53.477667",
+ "modified": "2024-04-19 00:33:30.950060",
  "modified_by": "Administrator",
  "module": "WhatsApp Business API Integration",
  "name": "WABA Settings",

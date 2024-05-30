@@ -4,6 +4,8 @@
 import frappe
 import requests
 import mimetypes
+import json
+from frappe import _
 
 from typing import Dict
 from functools import lru_cache
@@ -16,7 +18,7 @@ MEDIA_TYPES = ("image", "sticker", "document", "audio", "video")
 class WABAWhatsAppMessage(Document):
 	def validate(self):
 		self.validate_image_attachment()
-
+		
 		if self.message_type == "Audio" and self.media_file:
 			self.preview_html = f"""
 				<audio controls>
@@ -48,7 +50,7 @@ class WABAWhatsAppMessage(Document):
 		access_token = frappe.utils.password.get_decrypted_password(
 			"WABA Settings", "WABA Settings", "access_token"
 		)
-		api_base = "https://graph.facebook.com/v13.0"
+		api_base = frappe.db.get_single_value("WABA Settings", "api_base")
 		phone_number_id = frappe.db.get_single_value("WABA Settings", "phone_number_id")
 
 		endpoint = f"{api_base}/{phone_number_id}/messages"
@@ -104,10 +106,12 @@ class WABAWhatsAppMessage(Document):
 		)
 
 		file_name = get_media_extention(self, response.headers.get("Content-Type"))
+
 		file_doc = frappe.get_doc(
 			{
 				"doctype": "File",
 				"file_name": file_name,
+				"file_url": f"/files/{file_name}",
 				"content": response.content,
 				"attached_to_doctype": "WABA WhatsApp Message",
 				"attached_to_name": self.name,
@@ -129,7 +133,7 @@ class WABAWhatsAppMessage(Document):
 		if not self.media_id:
 			frappe.throw("`media_id` is missing.")
 
-		api_base = "https://graph.facebook.com/v13.0"
+		api_base = frappe.db.get_single_value("WABA Settings", "api_base")
 		access_token = self.get_access_token()
 		response = requests.get(
 			f"{api_base}/{self.media_id}",
@@ -158,7 +162,7 @@ class WABAWhatsAppMessage(Document):
 			"File", {"file_url": self.media_file}
 		).get_full_path()
 		access_token = self.get_access_token()
-		api_base = "https://graph.facebook.com/v13.0"
+		api_base = frappe.db.get_single_value("WABA Settings", "api_base")
 		phone_number_id = frappe.db.get_single_value("WABA Settings", "phone_number_id")
 
 		if not self.media_mime_type:
@@ -215,18 +219,30 @@ class WABAWhatsAppMessage(Document):
 			frappe.throw(response.json().get("error").get("message"))
 
 
-def create_waba_whatsapp_message(message: Dict) -> WABAWhatsAppMessage:
-	message_type = message.get("type")
+def create_waba_whatsapp_contact(contact: Dict):
+	profile = contact.get('profile')
 
-	# Create whatsapp contact doc if not exists
-	received_from = message.get("from")
+	received_from = contact.get('wa_id')
+	display_name = profile.get('name')
+
 	if not frappe.db.exists("WABA WhatsApp Contact", {"name": received_from}):
 		frappe.get_doc(
 			{
 				"doctype": "WABA WhatsApp Contact",
 				"whatsapp_id": received_from,
+				"display_name": display_name
 			}
 		).insert(ignore_permissions=True)
+
+	return display_name
+
+
+def create_waba_whatsapp_message(message: Dict) -> WABAWhatsAppMessage:
+
+	message_type = message.get("type")
+
+	# Create whatsapp contact doc if not exists
+	received_from = message.get("from")
 
 	message_data = frappe._dict(
 		{
@@ -240,15 +256,30 @@ def create_waba_whatsapp_message(message: Dict) -> WABAWhatsAppMessage:
 	)
 
 	if message_type == "text":
-		message_data["message_body"] = message.get("text").get("body")
+		message_data['message_type_title'] = "Text"
+		message_data["message_body"] = message.get("text").get("body")		
 	elif message_type in MEDIA_TYPES:
 		message_data["media_id"] = message.get(message_type).get("id")
 		message_data["media_mime_type"] = message.get(message_type).get("mime_type")
 		message_data["media_hash"] = message.get(message_type).get("sha256")
+		message_data['message_type_title'] = message_type
 
 	if message_type == "document":
 		message_data["media_filename"] = message.get("document").get("filename")
 		message_data["media_caption"] = message.get("document").get("caption")
+		message_data['message_type_title'] = message_type
+
+
+	if message_type == 'button':
+		message_data['message_type_title'] = message['button']['text']
+	elif message_type == 'interactive' and message['interactive']['type'] == 'list_reply':
+		list_reply = message['interactive']['list_reply']
+		message_data['message_type_id'] = message['interactive']['list_reply']['id']
+		message_data['message_type_title'] = message['interactive']['list_reply']['title']
+
+	elif message_type == 'interactive' and message['interactive']['type'] == 'button_reply':
+		message_data['message_type_title'] = message['interactive']['button_reply']['title']
+
 
 	message_doc = frappe.get_doc(message_data).insert(ignore_permissions=True)
 
@@ -286,5 +317,5 @@ def process_status_update(status: Dict):
 
 def get_media_extention(message_doc: WABAWhatsAppMessage, content_type: str) -> str:
 	return message_doc.media_filename or (
-		"attachment_." + content_type.split(";")[0].split("/")[1]
+		f"attachment_{message_doc.media_id}." + content_type.split(";")[0].split("/")[1]
 	)

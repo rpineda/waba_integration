@@ -11,7 +11,7 @@ app_license = "MIT"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_css = "/assets/waba_integration/css/waba_integration.css"
+app_include_css = "/assets/waba_integration/css/waba_integration.css"
 # app_include_js = "/assets/waba_integration/js/waba_integration.js"
 
 # include js, css files in header of web template

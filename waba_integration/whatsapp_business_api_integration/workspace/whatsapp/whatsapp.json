@@ -2,6 +2,7 @@
  "charts": [],
  "content": "[{\"id\":\"wc3HHqsg-p\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WABA Settings\",\"col\":3}},{\"id\":\"Y_1bDAzZbc\",\"type\":\"card\",\"data\":{\"card_name\":\"Communication\",\"col\":4}},{\"id\":\"9HACpwJXJq\",\"type\":\"card\",\"data\":{\"card_name\":\"Process Tracking\",\"col\":4}}]",
  "creation": "2023-05-14 12:41:13.182006",
+ "custom_blocks": [],
  "docstatus": 0,
  "doctype": "Workspace",
  "for_user": "",
@@ -68,7 +69,7 @@
    "type": "Link"
   }
  ],
- "modified": "2023-05-14 12:51:35.930945",
+ "modified": "2024-05-02 18:08:42.640971",
  "modified_by": "Administrator",
  "module": "WhatsApp Business API Integration",
  "name": "WhatsApp",
